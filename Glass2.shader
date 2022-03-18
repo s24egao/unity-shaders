@@ -10,18 +10,15 @@ Shader "Custom/Glass2"
 
     SubShader
     {
-        GrabPass
-        {
-            "_BackgroundTexture"
-        }
+        Tags { "Queue"="Transparent" }
+
+        GrabPass { }
 
         Pass
         {
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma multi_compile_fog
-
             #include "UnityCG.cginc"
 
             struct v2f
@@ -35,7 +32,7 @@ Shader "Custom/Glass2"
             float _Refraction;
             float _Roughness;
             float _Scatter;
-            sampler2D _BackgroundTexture;
+            sampler2D _GrabTexture;
 
             float random(float s) {
                 return frac(sin(s * 123.45) * 48763.0);
@@ -55,7 +52,7 @@ Shader "Custom/Glass2"
             fixed4 frag (v2f i) : SV_Target
             {
                 i.grabPos += i.refraction * _Refraction;
-                float4 col = tex2Dproj(_BackgroundTexture, i.grabPos);
+                float4 col = tex2Dproj(_GrabTexture, i.grabPos);
 
                 if(_Roughness > 0.0) {
                     col = (0.0, 0.0, 0.0, 0.0);
@@ -64,7 +61,7 @@ Shader "Custom/Glass2"
                         for(float y = 0; y <= 1.0; y += 0.05) {
                             float4 pos = i.grabPos;
                             pos.xy += (x - 0.5, y - 0.5) * _Roughness;
-                            samples += tex2Dproj(_BackgroundTexture, pos);
+                            samples += tex2Dproj(_GrabTexture, pos);
                         }
                     }
                     col = samples / 441;
@@ -73,7 +70,7 @@ Shader "Custom/Glass2"
                 if(_Scatter > 0.0) {
                     i.grabPos.x += (random(i.grabPos.x) - 0.5) * _Scatter * 0.5;
                     i.grabPos.y += (random(i.grabPos.y) - 0.5) * _Scatter * 0.5;
-                    col = tex2Dproj(_BackgroundTexture, i.grabPos);
+                    col = tex2Dproj(_GrabTexture, i.grabPos);
                 }
 
                 col.a = 1.0;

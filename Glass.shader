@@ -1,5 +1,3 @@
-// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
-
 Shader "Custom/Glass"
 {
     Properties
@@ -17,17 +15,13 @@ Shader "Custom/Glass"
     {
         Tags { "Queue"="Transparent" }
 
-        GrabPass
-        {
-            "_BackgroundTexture"
-        }
+        GrabPass { }
 
         Pass
         {
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma multi_compile_fog
             #include "UnityCG.cginc"
 
             struct v2f
@@ -46,7 +40,7 @@ Shader "Custom/Glass"
             float _RGBSeparate;
             float _Roughness;
             float _Scatter;
-            sampler2D _BackgroundTexture;
+            sampler2D _GrabTexture;
 
             float random(float s)
             {
@@ -80,7 +74,7 @@ Shader "Custom/Glass"
             fixed4 frag (v2f i) : SV_Target
             {
                 float4 refraction = 1 - dot(normalize(i.worldNormal), normalize(i.viewDirection));
-                float4 background = tex2DprojRGB(_BackgroundTexture, i.grabPos, refraction, _RGBSeparate);
+                float4 background = tex2DprojRGB(_GrabTexture, i.grabPos, refraction, _RGBSeparate);
 
                 fixed3 worldNormal = normalize(i.worldNormal);
                 fixed3 worldLight = normalize(_WorldSpaceLightPos0.xyz);
@@ -108,7 +102,7 @@ Shader "Custom/Glass"
                             float4 pos = i.grabPos;
                             pos.x += (x - 0.5) * _Roughness * 0.5;
                             pos.y += (y - 0.5) * _Roughness * 0.5;
-                            samples += tex2DprojRGB(_BackgroundTexture, pos, refraction, _RGBSeparate);
+                            samples += tex2DprojRGB(_GrabTexture, pos, refraction, _RGBSeparate);
                         }
                     }
                     col = lerp(samples / 441, col, alpha);
@@ -117,7 +111,7 @@ Shader "Custom/Glass"
                 if(_Scatter > 0.0) {
                     i.grabPos.x += (random(i.grabPos.x) - 0.5) * _Scatter * 0.5;
                     i.grabPos.y += (random(i.grabPos.y) - 0.5) * _Scatter * 0.5;
-                    col = lerp(tex2DprojRGB(_BackgroundTexture, i.grabPos, refraction, _RGBSeparate), col, alpha);
+                    col = lerp(tex2DprojRGB(_GrabTexture, i.grabPos, refraction, _RGBSeparate), col, alpha);
                 }
 
                 col *= tex2D(_MainTex, i.uv);

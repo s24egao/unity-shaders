@@ -121,7 +121,7 @@ Shader "Custom/Glass"
             }
             ENDCG
         }
-
-        UsePass "Legacy Shaders/VertexLit/SHADOWCASTER"
     }
+
+    FallBack "Diffuse"
 }
